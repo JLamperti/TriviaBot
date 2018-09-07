@@ -1,11 +1,11 @@
-'use strict'
-const tmi = require('tmi.js')
+'use strict';
+const tmi = require('tmi.js');
 const fs = require('fs');
 
 
 // Valid commands start with:
-let commandPrefix = '!'
-var questionActive = false;
+let commandPrefix = '!';
+let questionActive = false;
 let activeQuestionNumber;
 let defaultBounty = 100;
 // Define configuration options:
@@ -37,7 +37,7 @@ function echo(target, context, params) {
   // If there's something to echo:
   if (params.length) {
     // Join the params into a string:
-    const msg = params.join(' ')
+    const msg = params.join(' ');
     // Send it back to the correct place:
     sendMessage(target, context, msg)
   } else { // Nothing to echo
@@ -55,7 +55,7 @@ function trivia(target, context, params) {
         sendMessage(target, context, "starting trivia");
         let q = selectQuestion(target);
         console.log(q);
-        sendMessage(target, context, q.question)
+        sendMessage(target, context, q.question);
         console.log(target);
         console.log(context);
         let to = setTimeout(function() {
@@ -84,16 +84,18 @@ function trivia(target, context, params) {
       }
       break;
   }
-
 }
 
 
 function selectQuestion(channel) {
-  if (opts.selectMode == "random") {
+  if (opts.selectMode === "random") {
     // get random number for question
+    // console.log("loaded");
+    console.log(qnas);
     activeQuestionNumber = getRandomInt(0, Object.keys(qnas).length - 1);
 
-  } else if (opts.selectMode == "order") {
+
+  } else if (opts.selectMode === "order") {
     // go to next question
     if (activeQuestionNumber <= Object.keys(qnas).length - 1) {
       activeQuestionNumber++;
@@ -109,7 +111,7 @@ function questionTimeout(target, context) {
   console.log(target);
   console.log(context);
   if (questionActive) {
-    questionActive = false
+    questionActive = false;
     sendMessage(target, context, "No one answered the question correctly, closing question.");
 
   }
@@ -130,15 +132,16 @@ function sendMessage(target, context, message) {
 }
 
 // Create a client with our options:
-let client = new tmi.client(opts)
+let client = new tmi.client(opts);
 
 // Register our event handlers (defined below):
-client.on('message', onMessageHandler)
-client.on('connected', onConnectedHandler)
-client.on('disconnected', onDisconnectedHandler)
+client.on('message', onMessageHandler);
+client.on('connected', onConnectedHandler);
+client.on('disconnected', onDisconnectedHandler);
+//opts = loadFile("./../opts");
 
 // Connect to Twitch:
-client.connect()
+client.connect();
 
 // Called every time a message comes in:
 function onMessageHandler(target, context, msg, self) {
@@ -148,10 +151,10 @@ function onMessageHandler(target, context, msg, self) {
 
   // This isn't a command since it has no prefix:
   if (msg.substr(0, 1) !== commandPrefix) {
-    console.log(`[${target} (${context['message-type']})] ${context.username}: ${msg}`)
+    console.log(`[${target} (${context['message-type']})] ${context.username}: ${msg}`);
 
     if (questionActive &&
-      qnas[activeQuestionNumber].answers.indexOf(`${msg}`) != -1) {
+      qnas[activeQuestionNumber].answers.indexOf(`${msg}`) !== -1) {
       // handle correct answer
       console.log("correct answer by: " + `${context.username}: ${msg}`);
       sendMessage(target, context, `Correct answer by ${context["display-name"]}: ${msg}`);
@@ -163,18 +166,18 @@ function onMessageHandler(target, context, msg, self) {
   }
 
   // Split the message into individual words:
-  const parse = msg.slice(1).split(' ')
+  const parse = msg.slice(1).split(' ');
   // The command name is the first (0th) one:
-  const commandName = parse[0]
+  const commandName = parse[0];
   // The rest (if any) are the parameters:
-  const params = parse.splice(1)
+  const params = parse.splice(1);
 
   // If the command is known, let's execute it:
   if (commandName in knownCommands) {
     // Retrieve the function by its name:
-    const command = knownCommands[commandName]
+    const command = knownCommands[commandName];
     // Then call the command with parameters:
-    command(target, context, params)
+    command(target, context, params);
     console.log(`* Executed ${commandName} command for ${context.username}`)
   } else {
     console.log(`* Unknown command ${commandName} from ${context.username}`)
@@ -184,13 +187,12 @@ function onMessageHandler(target, context, msg, self) {
 // Called every time the bot connects to Twitch chat:
 function onConnectedHandler(addr, port) {
   qnas = loadFile("demoSetOne");
-  opts = loadFile("./../opts");
   console.log(`* Connected to ${addr}:${port}`)
 }
 
 // Called every time the bot disconnects from Twitch:
 function onDisconnectedHandler(reason) {
-  console.log(`Disconnected: ${reason}`)
+  console.log(`Disconnected: ${reason}`);
   process.exit(1)
 }
 
@@ -207,27 +209,28 @@ function loadQna(fileName){
 
 function loadFile(fileName) {
   var path = "./sets/" + fileName;
-  path = forceJsonFilename(path)
+  path = forceJsonFilename(path);
   fs.readFile(path, 'utf8', function readFileCallback(err, data) {
     if (err) {
       console.log(err);
             return err;
     } else {
+      console.log("loaded");
       return JSON.parse(data);
     }
   });
 }
 
 function saveFile(object, fileName) {
-  var path = "./sets/" + fileName
-  path = forceJsonFilename(path)
+  var path = "./sets/" + fileName;
+  path = forceJsonFilename(path);
   var json = JSON.stringify(object);
   fs.writeFile(path, json, 'utf8', function() {});
 
 }
 
 function forceJsonFilename(path) {
-  if (path.substr(path.length - 5) != ".json") {
+  if (path.substr(path.length - 5) !== ".json") {
     return path + ".json"
   }
   return path
